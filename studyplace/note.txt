@@ -6,3 +6,16 @@
 4.主启动Main
 5.业务类 dao、service、controller
 
+服务注册中心：Eureka、Zookeeper、Consul、Nacoss
+eureka(已停更)
+自我保护模式中，不会注销任何服务实例
+底层还是使用httpClient
+
+多个eureka地址，可在host文件弄域名，添加
+127.0.0.1 eureka7001.com
+127.0.0.1 eureka7002.com
+
+
+服务调用（Ribbon、LoadBalancer）
+
+服务调用2（Feign、OpenFeign）
