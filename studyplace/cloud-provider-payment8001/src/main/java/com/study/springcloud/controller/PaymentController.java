@@ -6,10 +6,7 @@ import com.study.springcloud.service.PaymentService;
 import lombok.Value;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 
@@ -28,7 +25,7 @@ public class PaymentController {
     private PaymentService paymentService;
 
     @PostMapping(value = "/payment/create")
-    public CommentResult create(Payment payment){
+    public CommentResult create(@RequestBody Payment payment){
         log.info("payment： "+payment);
         int result = paymentService.create(payment);
         log.info("插入结果： "+result);
