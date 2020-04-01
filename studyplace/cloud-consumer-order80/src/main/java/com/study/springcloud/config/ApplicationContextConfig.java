@@ -14,6 +14,7 @@ import org.springframework.web.client.RestTemplate;
 public class ApplicationContextConfig {
 
     /**
+     * Ribbon负载均衡
      * LoadBalanced 轮询服务注册机（8001,8002）
      * */
     @Bean

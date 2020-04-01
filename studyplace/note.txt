@@ -102,5 +102,64 @@ cmd 命令窗口执行:consul.exe agent -server ui -bootstrap -client 0.0.0.0 -d
 
 
 服务调用（Ribbon、LoadBalancer）
+ribbon-----负载均衡+RestTemplate调用
+（spring-cloud-starter-netflix-eureka-client 已集成ribbon不需另加依赖）
+RestTemplate----
+getForObject:返回对象为响应体重数据转化成的对象，可以理解为json
+getForEntity:返回对象为ResponseEntity对象，包含了响应中的一些重要信息，比如响应头、响应状态码、响应体等。
+
+
+
+负载均衡算法
+轮询算法（取余）：rest接口第几次请求数 % 服务器集群总数量 = 实际调用服务器位置下标， 每次服务重启动后rest接口计数从1开始。
+
+IRule
+自己的规则不能放在启动类(@ComponentScan)的包内
+
+Spring Cloud Ribbon 是基于Netflix Ribbon实现的一套客户端 负载均衡工具
+主要功能是提供客户端的软件负载均衡算法和服务条用。
+Ribbon客户端组件提供一系列完善的配置项如连接超时，重试等。
+就是在配置文件中列出Load Balance后面所有的机器，Ribbon会自动帮助你基于某种规则（如简单轮询、随机连接等），去连接这些机器。
+
+LB负载均衡：将用户的请求平摊的分配到多个服务商，从而达到系统HA（高可用）。
+常见的负载均衡软件：Nginx、LVS,硬件F5等
+两种方式LB
+集中式LB：在服务的消费方和提供方之间使用独立的LB设施（F5硬件、Nginx），负责把访问请求通过某种策略转发至服务的提供方。
+进程内LB：把LB逻辑集成到消费方，消费方从服务注册中心获知有哪些地址可用，然后自己再从这些地址中选择出一个合适的服务器。
+（Ribbon就属于进程内LB,它只是一个类库，集成于消费方进程，消费方通过它来获取到服务提供方的地址。）
+
+Ribbon本地负责均衡客户端 VS Nginx服务端负载均衡区别
+Nginx是服务器负载均衡，客户端所有请求都会交给nginx，然后由nginx实现转发请求。即负载均衡是由服务端实现的。
+Ribbon是本地负载均衡，在调用微服务接口时，会在注册中心上获取注册信息服务列表之后缓存到JVM本地，从而在本地实现RPC远程服务调用技术。
+
+Ribbon工作步骤
+第一步寻找EurekaServer,它优先选择在同一个区域内负载较少的server。
+第二步再根据用户指定的策略（轮询、随机、根据响应时间加权），在server去到的服务注册列表中选择一个地址。
+
 
 服务调用2（Feign、OpenFeign）
+Feign
+是一个声明式WebService客户端。使用Feign能让编写Web Service客户端更加简单。
+它的使用方法是定义一个服务接口然后在尚明添加注解。Feign也支持可插拔式的编码器和解码器。
+Spring Cloud和Feign进行了封装，使其支持了Spring MVC标准注解和HttpMessageConverters。
+Feign可以与Eureka和Ribbon组合使用以支持负载均衡
+
+旨在使编写Java Http客户端变得更容易。
+Ribbon+RestTemplate，利用RestTemplate对http请求的封装处理，形成一套模板化的调用方法。
+但是在实际开发中，由于对服务依赖的调用可能不止一处，往往一个接口会被多处调用，所以通常都会被针对每个微服务自行封装一些客户端来包装这些依赖服务的调用。
+所以，Feign在此基础上做了进一步封装，由它来帮助我们定义和实现依赖服务接口的定义。
+在Feign的实现下，我们只需创建一个接口并使用注解的方式来配置它（以前是Dao接口上面标注Mapper注解，，现在是一个微服务接口上面标注一个Feign注解即可）
+即可完成对服务提供方的接口绑定，简化了使用Spring cloud Ribbon时。自动封装服务调用客户端的开发量。
+
+Feign集成了Ribbon
+利用Ribbon维护了Paymeng的服务列表信息，并且通过轮询实现了客户端的负载均衡。
+与Ribbon不同的是，通过Feign只需要定义服务绑定接口且以声明式的方法，优雅而简单的实现了服务调用
+
+OpenFeign
+在Feign的基础上支持SpringMVC的注解，如RequesMapping等。
+@FeignClient可以解析SpringMVC的@RequestMapping注解下的接口，并通过动态代理的方式产生实现类，实现类中做负载均衡并调用其他服务
+
+<dependency>
+    <groupId>org.springframew ork.cloud</groupId>
+    <artifactId>spring-cloud-starter-openfeign</artifactId>
+</dependency>

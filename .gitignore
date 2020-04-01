@@ -1,1 +1,3 @@
-studyplace/.idea/*
+studyplace/.idea/
+*.iml
+*.class

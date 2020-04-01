@@ -46,7 +46,7 @@ public class PaymentController {
     }
 
     @GetMapping(value = "/payment/get/{id}")
-    public CommentResult getPaymentById(@PathVariable("id")Long id){
+    public CommentResult<Payment> getPaymentById(@PathVariable("id")Long id){
         Payment result = paymentService.getPaymentById(id);
         log.info("查询结果： "+result);
         if (result != null){
@@ -71,5 +71,10 @@ public class PaymentController {
             log.info(instance.getServiceId()+"\t"+instance.getHost()+"\t"+instance.getPort()+"\t"+instance.getUri());
         }
         return this.discoveryClient;
+    }
+
+    @GetMapping(value = "/payment/lb")
+    public String getPaymentLB(){
+        return serverPort;
     }
 }
