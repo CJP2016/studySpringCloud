@@ -163,3 +163,16 @@ OpenFeign
     <groupId>org.springframew ork.cloud</groupId>
     <artifactId>spring-cloud-starter-openfeign</artifactId>
 </dependency>
+
+
+服务降级（Hystrix、resilience4j、sentinel）
+Hystrix(已停更)
+
+
+服务网关（Zuul、Zuul2、gateway）
+
+
+服务配置（Config、Nacos）
+
+
+服务总线（Bus、Nacos）
