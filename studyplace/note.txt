@@ -2,11 +2,73 @@
 
 1.建module
 2.改pom
-3.写yml
-4.主启动Main
-5.业务类 dao、service、controller
+  <!--springboot web组件-->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-actuator</artifactId>
+        </dependency>
+        <!--日常通用jar包配置-->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-devtools</artifactId>
+            <scope>runtime</scope>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
 
-服务注册中心：Eureka、Zookeeper、Consul、Nacoss
+3.写yml
+server:
+ port:
+
+spring:
+  application:
+    name: cloud-payment-service
+
+4.主启动Main
+com.study.springcloud.OrderMain80
+
+com.study.springcloud.PaymentMain
+
+@SpringBootApplication
+@EnableDiscoveryClient
+
+    public static void main(String[] args) {
+        SpringApplication.run(,args);
+    }
+
+5.业务类 dao、service、controller
+com.study.springcloud
+controller.PaymentController
+
+
+
+服务注册中心：Eureka(AP)、Zookeeper(CP)、Consul(CP)、Nacoss
+
+CAP理论:关注粒度是数据，而不是整体系统设计的
+一个分布式系统不可能同时很好的满足一致性、可用性和分区容错性这三个需求，最多只能同时较好的满足两个
+Consistency(强一致性)
+Availability（可用性）
+Partition tolerance（分区容错性）
+NoSQL数据库根据CAP理论分成三大类
+CA - 单点集群，满足一致性，可用性的系统，通常性能不是特别高
+CP - 满足一致性，分区容忍性的系统，通常性能不是特别高
+AP - 满足可用性，分区容忍性的系统，通常可能对一致性要求低一些
+
+
+
 eureka(已停更)
 自我保护模式中，不会注销任何服务实例
 底层还是使用httpClient
@@ -14,6 +76,29 @@ eureka(已停更)
 多个eureka地址，可在host文件弄域名，添加
 127.0.0.1 eureka7001.com
 127.0.0.1 eureka7002.com
+
+zookeeper
+yml
+#8004表示注册到zookeeper服务器的支付服务提供者端口号
+server:
+  port: 8004
+#服务别名----注册zookeeper到注册中心名称
+spring:
+  application:
+    name: cloud-payment-service
+  cloud:
+    zookeeper:
+      connect-string: 127.0.0.1:2181
+#      connect-string: 192.168.111.144:2181
+
+consul
+下载：https://www.consul.io/downloads.html
+添加环境变量：E:\consul
+cmd 命令窗口执行：consul agent -dev
+consul 自带 UI 界面，打开网址：http://localhost:8500 ，可以看到当前注册的服务界面
+cmd 命令窗口执行:consul.exe agent -server ui -bootstrap -client 0.0.0.0 -data-dir="E:\consul" -bind X.X.X.X
+其中X.X.X.X为服务器ip,即可使用http://X.X.X.X:8500 访问ui而不是只能使用localhost连接
+注意：添加环境变量之后有可能无法启动，需要到consul.exe文件夹下面去执行consul agent -dev
 
 
 服务调用（Ribbon、LoadBalancer）
