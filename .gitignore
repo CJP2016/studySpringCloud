@@ -1,6 +1,5 @@
 studyplace/.idea/
 .idea/
-*.iml
 *.class
 .project
 /.idea/*
