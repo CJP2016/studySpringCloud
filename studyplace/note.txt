@@ -229,6 +229,101 @@ pom引用，启动服务后可在http://localhost:xxx/hystrix看到相关信息
 
 服务网关（Zuul、Zuul2、gateway）
 
+Zuul（路由网关）
+netflix,zuul维护,zuul2跳票出不来成品，逐渐废弃
+官网：https://github.com/Netflix/zuul/wiki
+使用传统的Servlet IO处理模型。
+缺点
+servlet是一个简单的网络IO模型，在并发不高的情景下这种模型是使用的。
+但是高并发，线程数量机会上涨，而线程资源代价是昂贵的（上下文切换，内存消耗大）严重影响请求的处理时间。
+在一些简单业务场景下，不希望为每个request分配一个线程，只需要1个或几个线程就能应对极大并发的请求，这种业务场景下servlet模型没有优势。
+因此Zuul 1.x是基于servlet之上的一个阻塞式处理模型，即spring实行了处理所有request请求的一个servlet（DispatcherServlet）并有该servlet阻塞式处理
+所以Spring cloud Zuul无法摆脱servlet模型的弊端
+
+Zuul和gateway的区别
+Spring cloud Finchley正式版之前，推荐网关是Netflix提供的Zuul;
+1、Zuul 1.x 是一个基于阻塞I/O的API Gateway
+2、Zuul 1.x基于Servlet 2.5使用阻塞框架，它不支持任何长连接（如WebSocket）Zuul的设计模式和Nginx交像，
+每次I/O操作都是从工作线程中选择一个执行，请求线程被阻塞到工程线程完成，
+但是差别是Nginx用C++实现，Zuul用java实现，而JVM本身会有第一次加载较慢的情况，使得Zuul的性能相对较差。
+3、Zuul 2.x理念更先进，想基于Netty非阻塞和支持长连接，但SpringCloud目前还没有整合。Zuul 2.x的性能较Zuul 1.x有较大提升，
+在性能方面，官方提供的基准测试，Spring Cloud Gateway的RPS(每秒请求数) 是Zuul的1.6倍。
+4、Spring Cloud Gateway 建立在Spring framework 5,Spring boot2.x、Spring WebFlux 、Project Reactor之上，使用非阻塞API.
+5、Spring Cloud Gateway 还支持WebSocket，并且与Spring紧密集成拥有更好地开发体验。
+
+WebFlux
+传统的web框架，如struts2，springmvc等都是基于servlet API与Servlet容器基础上运行的。
+但Servlet3.1之后有了异步非阻塞的支持。
+而WebFlux是一个典型非阻塞异步的框架，它的核心是基于Reactor的相关API实现的。
+相对于传统web框架来说，它可以运行在诸如Netty，Undertow及支持Servlet3.1的容器上。
+非阻塞式+函数式编程(Spring5必须让你使用java8)
+SpringWebFlux 是Spring 5.0 引入的新的响应式框架，区别于Spring MVC，它不需要依赖Servlet API，它是完全异步非阻塞的，并且基于Reactor来实现响应式流规范。
+
+
+gateway（新一代网关、spring自己出，整合了环境Spring framework 5,Spring boot2.x、Spring WebFlux 、Project Reactor）
+gateway是zuul 1.x的替代版，基于WebFlux框架实现，WebFlux框架底层则是使用了高性能的Reactor模式通信框架Netty(建议看韩顺平讲解netty)
+Spring cloud gateway的目标提供统一的路由方式且基于Filter链的方式提供网关的基本功能，如：安全，监控/指标，限流。
+动态路由：能够匹配任何请求属性
+可以对指定Predicate(通信)和Filter(过滤器);
+集成Hystrix的断路器功能；
+集成Spring Cloud服务发现功能；
+易于编写的Predicate(通信)和Filter(过滤器);
+请求限流功能；
+支持路径重写。
+
+gateway三大核心概念
+Route(路由)
+构建网关的基本模块，它由ID,目标URI,一系列的断言和过滤器组成，如果断言为true则匹配该路由
+
+Predicate(断言-----九种方式，参考9527项目的yml)
+参考的是Java8的java.util.function.Predicate
+开发人员可以匹配HTTP请求中的所有内容（例如请求头或请求参数），如果请求与断言相匹配则进行路由
+
+Gateway包括许多内置的Route Predicate工厂。所有这些predicate都与Http请求的不同属性匹配。多个Route Predicate工厂可以进行组合
+Gateway创建Route 对象时，使用RoutePredicateFactory创建Predicate对象,Predicate对象可以赋值给Route。
+
+可在cmd里用curl测试接口（可带cookie  url --cookie "xxxx=xxx"、Header  url -H "xxxx"）
+
+Filter(过滤)
+指的是Spring框架中GatewayFilter的实例，使用过滤器，可以在请求被路由前或者之后对请求进行修改。
+
+生命周期
+pre
+
+post
+
+种类
+GatewayFilter(局部--31种，可在官网看)
+GlobalFilter（全局--10+种）
+配置yml filter  或自定义过滤器
+
+GateWay总体
+web请求，通过一些匹配条件，定位到真正的服务节点，并在这个转发过程的前后，进行一些精细化控制。
+predicate就是我们的匹配条件；而filter，可理解为一个无所不能的拦截器。
+有了这两个元素，再加上目标uri，就可以实现一个具体的路由了。
+
+客户端向Gateway发出请求，然后在Gateway Handler Mapping 中找到与请求相匹配的路由，将其发到Gateway web Handler.
+Handler再通过指定的过滤器链来讲请求发送到我们实际的服务执行业务逻辑，然后返回。
+过滤器可能会在发送代理请求之前（"pre"）或之后("post")执行业务逻辑。
+Filter在"pre"类型的过滤器可以做参数校验、权限校验、流量监控、日志输出、协议转换等，
+在"post"类型的过滤器中可以做响应内容、响应头的修改，日志的输出、就来监控等。
+
+gateway----pom.xml
+<dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-starter-gateway</artifactId>
+        </dependency>
+带eureka.
+不能带starter-web，不然启动会报错
+
+gateway配置网关路由的两种方法
+在配置文件yml中配置
+代码中注入RouteLocator的Bean
+
+动态路由
+默认情况下Gateway会根据注册中心注册的服务列表，以注册中心上微服务名为路径创建动态路由进行转发，从而实现动态路由的功能
+
+
 
 服务配置（Config、Nacos）
 
