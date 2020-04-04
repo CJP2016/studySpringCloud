@@ -1,0 +1,25 @@
+server:
+  port: 3344
+
+spring:
+  application:
+    name: cloud-config-center #注册金eureka服务器的服务名
+  cloud:
+    config:
+      server:
+        git:
+          uri: https://github.com/CJP2016/springcloud-config.git  #GitHub上面的git仓库名字
+#          username: cjp2016
+#          password: Aa502260172
+          #搜索目录
+          search-paths:
+            - springcloud-config
+          #读取分支
+          label: master
+
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:7001/eureka
+
