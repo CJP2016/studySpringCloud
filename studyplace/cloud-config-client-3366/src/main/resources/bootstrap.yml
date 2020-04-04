@@ -1,5 +1,5 @@
 server:
-  port: 3355
+  port: 3366
 spring:
   application:
     name: config-client
@@ -27,5 +27,5 @@ eureka:
 management:
   endpoints:
     web:
-       exposure:
-         include: "*"
+      exposure:
+        include: "*"

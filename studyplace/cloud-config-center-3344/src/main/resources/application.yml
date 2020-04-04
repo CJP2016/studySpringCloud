@@ -18,8 +18,21 @@ spring:
           label: master
 
 
+
 eureka:
   client:
     service-url:
       defaultZone: http://localhost:7001/eureka
 
+#rabbitmq相关配置
+rabbitmq:
+  host: localhost
+  port: 5672
+  username: guest
+  password: guest
+
+management: #rabbitmq相关配置，暴露bus刷新配置的端点  暴露-刷新，pom文件一定要有actuator
+  endpoints:  #暴露bus刷新配置的端点
+    web:
+      exposure:
+        include: 'bus-refresh'
