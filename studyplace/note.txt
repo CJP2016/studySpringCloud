@@ -29,6 +29,7 @@
             <scope>test</scope>
         </dependency>
 
+---------------------------------------------------
 3.写yml
 server:
  port:
@@ -37,6 +38,7 @@ spring:
   application:
     name: cloud-payment-service
 
+---------------------------------------------------
 4.主启动Main
 com.study.springcloud.OrderMain80
 
@@ -49,12 +51,13 @@ com.study.springcloud.PaymentMain
         SpringApplication.run(,args);
     }
 
+---------------------------------------------------
 5.业务类 dao、service、controller
 com.study.springcloud
 controller.PaymentController
 
 
-
+=============================================================================
 服务注册中心：Eureka(AP)、Zookeeper(CP)、Consul(CP)、Nacoss
 
 CAP理论:关注粒度是数据，而不是整体系统设计的
@@ -77,6 +80,7 @@ eureka(已停更)
 127.0.0.1 eureka7001.com
 127.0.0.1 eureka7002.com
 
+-----------------------------------------------------------------
 zookeeper
 yml
 #8004表示注册到zookeeper服务器的支付服务提供者端口号
@@ -91,6 +95,7 @@ spring:
       connect-string: 127.0.0.1:2181
 #      connect-string: 192.168.111.144:2181
 
+------------------------------------------------------------------
 consul
 下载：https://www.consul.io/downloads.html
 添加环境变量：E:\consul
@@ -100,7 +105,7 @@ cmd 命令窗口执行:consul.exe agent -server ui -bootstrap -client 0.0.0.0 -d
 其中X.X.X.X为服务器ip,即可使用http://X.X.X.X:8500 访问ui而不是只能使用localhost连接
 注意：添加环境变量之后有可能无法启动，需要到consul.exe文件夹下面去执行consul agent -dev
 
-
+=============================================================================
 服务调用（Ribbon、LoadBalancer）
 ribbon-----负载均衡+RestTemplate调用
 （spring-cloud-starter-netflix-eureka-client 已集成ribbon不需另加依赖）
@@ -136,7 +141,7 @@ Ribbon工作步骤
 第一步寻找EurekaServer,它优先选择在同一个区域内负载较少的server。
 第二步再根据用户指定的策略（轮询、随机、根据响应时间加权），在server去到的服务注册列表中选择一个地址。
 
-
+==========================================================================
 服务调用2（Feign、OpenFeign）
 Feign
 是一个声明式WebService客户端。使用Feign能让编写Web Service客户端更加简单。
@@ -165,6 +170,7 @@ OpenFeign
 </dependency>
 
 
+=======================================================================
 服务降级（Hystrix、resilience4j、sentinel）
 Hystrix(已停更)
 是一个用于处理分布式系统的 延迟 和 容错 的开源库，在分布式系统里，许多依赖不可避免的会调用失败，如超时、异常等。
@@ -227,6 +233,7 @@ pom引用，启动服务后可在http://localhost:xxx/hystrix看到相关信息
         </dependency>
 监控时pom要有web组件依赖（web、actuator）
 
+======================================================================================
 服务网关（Zuul、Zuul2、gateway）
 
 Zuul（路由网关）
@@ -251,6 +258,7 @@ Spring cloud Finchley正式版之前，推荐网关是Netflix提供的Zuul;
 4、Spring Cloud Gateway 建立在Spring framework 5,Spring boot2.x、Spring WebFlux 、Project Reactor之上，使用非阻塞API.
 5、Spring Cloud Gateway 还支持WebSocket，并且与Spring紧密集成拥有更好地开发体验。
 
+-------------------------------------------------------------------------------
 WebFlux
 传统的web框架，如struts2，springmvc等都是基于servlet API与Servlet容器基础上运行的。
 但Servlet3.1之后有了异步非阻塞的支持。
@@ -324,7 +332,7 @@ gateway配置网关路由的两种方法
 默认情况下Gateway会根据注册中心注册的服务列表，以注册中心上微服务名为路径创建动态路由进行转发，从而实现动态路由的功能
 
 
-
+====================================================================================
 服务配置（Config、Nacos）
 微服务意味着将单体应用中的业务拆分成一个个子服务，每个服务的粒度相对较小，因此系统中会出现大量的服务。由于每个服务都需要必要的配置信息才能运行，
 所以一套集中式的、动态的配置管理设施是必不可少的。
@@ -394,6 +402,7 @@ Controller添加注解@RefreshScope
 手动在cmd发送post请求，就可以不重启服务，获取新的修改配置
 curl -X POST "HTTP://localhost:3355/actuator/refresh"
 
+===================================================================================
 服务总线（Bus、Nacos）
 Spring Cloud Bus
 用来将分布式系统的节点与轻量级消息系统链接起来的框架，它整合了Java的事件处理机制和消息中间件的功能。
@@ -472,7 +481,7 @@ curl -X POST "http://localhost:3344/actuator/bus-refresh/config-client:3355"
 config-client是yml配置的application.name
 
 
-
+================================================================
 SpringCloud Stream 消息驱动
 屏蔽底层消息中间件的差异，降低切换成本，统一消息的变成模型
 
@@ -524,3 +533,37 @@ Source和Sink——从Strem发布消息的就是输出，接受消息就是输�
 自定义分组……同上
 -------------------
 不同的组是可以全面消费（重复消费），通一组内会发生竞争关系，只有其中一个可以消费。
+
+=============================================================================
+Spring Cloud Sleuth 分布式请求链路跟踪
+解决问题--设计思路
+在微服务框架中，一个由客户端发起的请求在后端系统中会经过多个不同的服务节点调用来协同产生最后的请求结果，
+每一个前段请求都会形成一条复杂的分布式服务调用链路，链路中的任何一环出现高延时或错误都会引起整个请求最后的失败。
+
+官网：https://github.com/spring-cloud/spring-cloud-sleuth
+Spring Cloud Sleuth（负责跟踪）提供了一套完整的服务跟踪的解决方案
+在分布式系统中提供追踪解决方案并且兼容支持zipkin（负责展现）
+
+zipkin
+下载jar包（-exec.jar）：https://dl.bintray.com/openzipkin/maven/io/zipkin/java/zipkin-server/
+本地cmd运行 java -jar zipkin-server-2.12.9-exec.jar
+localhost:9411 可以看zipkin监控页面
+
+一条链路通过Trace Id唯一标识，Span标识发起的请求信息，各span 通过parent id关联起来
+Trace:类似于树结构的Span集合，表示一条调用链路，存在唯一标识
+span:标识调用链路来源，通俗的理解span就是一次请求信息
+
+pom.xml
+<dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-starter-zipkin</artifactId>
+        </dependency>
+
+application.yml
+spring.application.name 下加
+  zipkin:
+    base-url: http://localhost:9411
+  sleuth:
+    sampler:
+      #采样率值介于 0-1 之间，1表示全部采集
+      probability: 1
