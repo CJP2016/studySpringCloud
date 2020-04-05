@@ -682,6 +682,91 @@ db.password=root
 
 官网文档：https://nacos.io/zh-cn/docs/deployment.html
 
+--------------...................-------------------------------
+Linux(centOS8)
+nacos:
+nacos/conf
+1.把nacos-mysql.sql导入本地数据库
+
+2.application.properties (添加mysql数据库连接)
+######################################
+spring.datasource.platform=mysql
+
+db.num=1
+db.url.0=jdbc:mysql://127.0.0.1:3306/nacos_config?characterEncoding=utf8&connectTimeout=1000&socketTimeout=3000&autoReconnect=true
+db.user=root
+db.password=root
+######################################
+
+2.cluster.conf
+#nacos对外服务器地址,example
+192.168.189.129:3333
+192.168.189.129:4444
+192.168.189.129:5555
+
+3.修改startup.sh
+在s:之后新增—— p:   —— p) PORT=$OPTARG;;
+while getopts ":m:f:s:p:" opt
+do
+    case $opt in
+        m)
+            MODE=$OPTARG;;
+        f)
+            FUNCTION_MODE=$OPTARG;;
+        s)
+            SERVER=$OPTARG;;
+	p)
+	    PORT=$OPTARG;;
+        ?)
+        echo "Unknown parameter"
+        exit 1;;
+    esac
+done
+
+# start
+在$JAVA ${JAVA_OPT} 之间新增 -Dserver.port=${PORT}
+nohup $JAVA -Dserver.port=${PORT} ${JAVA_OPT} nacos.nacos >> ${BASE_DIR}/logs/start.out 2>&1 &
+
+4.nacos启动
+nacos/bin
+./start.sh -p 3333
+./start.sh -p 4444
+./start.sh -p 5555
+
+开放linux（centOS8）1000-6000的端口端口
+firewall-cmd --zone=public --add-port=1000-6000/tcp --permanent
+刷新防火墙
+firewall-cmd --reload
+
+启动/关闭mysql
+service mysql start/stop
+
+查看有多少个nacos启动了
+ps -ef|grep nacos|grep -v grep |wc -l
+
+nginx:
+nginx/conf
+nginx.conf(看位置修改，不是复制黏贴，cluster跟nacos的ip：port一样)
+upstream cluster{
+		server 127.0.0.1:3333;
+		server 127.0.0.1:4444;
+		server 127.0.0.1:5555;
+	}
+
+server{
+  listen :1111
+location / {
+    proxy_pass http://cluster;
+}
+}
+
+nginx/sbin
+./nginx -c /opt/nginx/conf/nginx.conf   (opt/nginx为nginx地址)
+./nginx -s stop 关闭
+./nginx -s reload 重启
+
+完成操作，以后可以远程调用 服务器ip：1111(nginx监听端口)/nacos 登陆nacos
+
 -----------------------------------------------------------------
 Sentinel
 阿里巴巴开源产品，把流量作为切入点，从流量控制、熔断降级、系统负载保护等多个维度保护服务的稳定性。
