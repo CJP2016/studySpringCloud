@@ -19,11 +19,11 @@ public class ConfigClientController {
     @Value("${server.port}")
     private String serverPort;
 
-    @Value("${config.info}")
-    private  String configInfo;
+//    @Value("${config.info}")
+//    private  String configInfo;
 
     @GetMapping("/config/info")
     public String getConfigInfo(){
-        return "serverPort: "+serverPort+"\t\n\n configInfo: "+configInfo;
+        return "serverPort: "+serverPort+"\t\n\n configInfo: "+serverPort;
     }
 }

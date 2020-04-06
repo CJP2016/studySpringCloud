@@ -746,7 +746,7 @@ ps -ef|grep nacos|grep -v grep |wc -l
 
 nginx:
 nginx/conf
-nginx.conf(看位置修改，不是复制黏贴，cluster跟nacos的ip：port一样)
+nginx.conf(看位置修改，不是复制黏贴，cluster跟nacos的cluster.conf里的ip：port一样)
 upstream cluster{
 		server 127.0.0.1:3333;
 		server 127.0.0.1:4444;
@@ -770,6 +770,183 @@ nginx/sbin
 -----------------------------------------------------------------
 Sentinel
 阿里巴巴开源产品，把流量作为切入点，从流量控制、熔断降级、系统负载保护等多个维度保护服务的稳定性。
+git:github.com/alibaba/Sentinel
+下载：github.com/alibaba/Sentinel/releases
+
+Sentinel分为两部分
+核心库（Java客户端） 不依赖任何框架/库，能够运行于所有Java运行时环境，同时对Dubbo /Spring Cloud等框架也有较好的支持
+控制台（Dashboard） 基于Spring Boot 开发，打包后可以直接运行，不需要额外的Tomcat等应用容器。
+.............................
+Sentinel和Hystrix对比
+Hystrix
+需要程序员手工搭建监控平台
+没有一套web界面可以给我们进行更加细粒度化的配置流控、速率控制、服务熔断、服务降级
+
+Sentinel
+单独一个组件，可以独立出来
+直接界面化的细粒度统一配置
+约定>配置>编码
+可以用代码进行配置，但是尽量用配置和注解的方式，少写代码
+..........................
+Sentinel配置
+pom.xml
+  <!--Spring Cloud alibaba nacos-->
+       <dependency>
+           <groupId>com.alibaba.cloud</groupId>
+           <artifactId>spring-cloud-starter-alibaba-nacos-discovery</artifactId>
+       </dependency>
+       <!--Spring cloud alibaba sentinel-datasource-nacos 后续做持久化用到-->
+       <dependency>
+           <groupId>com.alibaba.csp</groupId>
+           <artifactId>sentinel-datasource-nacos</artifactId>
+       </dependency>
+       <!--Spring cloud alibaba sentinel-->
+       <dependency>
+           <groupId>com.alibaba.cloud</groupId>
+           <artifactId>spring-cloud-starter-alibaba-sentinel</artifactId>
+       </dependency>
+       <!--openfeign-->
+       <dependency>
+           <groupId>org.springframework.cloud</groupId>
+           <artifactId>spring-cloud-starter-openfeign</artifactId>
+       </dependency>
+
+.............
+application.yml
+
+spring:
+  application:
+    name: cloudalibaba-sentinel-service
+  cloud:
+    nacos:
+      discovery:
+        server-addr: localhost:8848 #Nacos服务注册中心地址
+    sentinel:
+      transport:
+        #配置Sentinel dashboard地址
+        dashboard: localhost:8080
+        #默认8719端口，假如被占用会自动从8719开始依次+1扫描，直至找到未被占用的端口
+        port: 8719
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+
+登陆地址：http://localhost:8080/
+
+..........................
+流控规则（判断物为访问流量）
+资源名：唯一名称，默认请求路径
+针对来源：Sentinel可以针对调用者进行限流，填写微服务名，默认default（不区分来源）
+阈值类型/单机阈值：
+    QPS(每秒钟的请求数量)：当调用该api的QPS达到阈值时，进行限流
+    线程数：当调用该api的线程数达到阈值的时候，进行限流
+是否集群：不需要集群
+
+流控模式：
+    直接：api达到限流条件时，直接限流
+    关联：当关联的资源达到阈值时，就限流自己
+    链路：只记录指定链路上的流量（指定资源从入口资源尽量的流量，如果达到阈值，就进行限流）
+
+流控效果：
+    快速失败：直接失败，抛异常
+    Warm Up: 根据codeFacotr（冷加载因子，默认3）的值，从阈值/codeFacotr，经过预热时长，才达到设置的QPS阈值
+    排队等候
+
+=================================
+降级规则（判断物为异常）
+RT(平均反应时间，秒级)
+    平均反应时间 超出阈值 且 在时间窗口内通过的请求>=5，两个条件同时满足后触发降级
+    窗口期过后关闭断路器
+    RT最大4900 （更大的需要通过-Dcsp.sentinel.statistic.max.rt=XXX才能生效）
+
+异常比例（秒级）
+    QPS >= 5 q却异常比例统计超过阈值时，出发降级；时间窗口结束后，关闭降级
+
+异常数（分钟级）
+    异常数（分钟统计）超过阈值时，触发降级；时间窗口结束后，关闭降级
+=================================
+热点规则
+
+@SentinelResource(value = "testHotKey",blockHandler = "deal_testHotKey")
+deal_testHotKey兜底返回方法
+控制的是sentinel控制台配置的违规情况，有bloackHandler方法配置的兜底处理。
+
+RuntiemException
+int age = 10/0,这个是java运行时出现的运行异常，@SentinelResource不管
+
+总结
+@SentinelResource主管配置出错，运行时出错该走异常走异常
+
+================================
+系统规则
+支持模式：
+    Load自适应（尽对Linux|Unix-like机器生效）：系统的load1作为启发指标，进行自适应系统保持。当系统load1超过设定的启发值，且系统当前的并发线程数超过估算的系统容量时才会触发系统保护（BBR阶段）。系统容量由系统的maxQps * minRt 估算得出（参考值 CPU cores* 2.5）。
+    CPU usage(1.5.0+ 版本)： 当系统CPU使用率超过阈值即触发系统保护，单位是毫秒。
+    平均RT:当单台机器上所有入口流量的平均RT达到阈值即触发系统保护，单位是毫秒。
+    并发线程数：当单台机器上所有入口流量的并发线程数达到阈值即触发系统保护。
+    入口QPS：当单台机器上所有入口流量的QPS达到阈值即触发系统保护。
+..........................
+sentinel三个核心api
+SphU定义资源
+Tracer定义统计
+ContextUtil定义了上下文
+
+-------------------------
+持久化Sentinel限流配置————针对重启服务，限流配置清空
+将限流配置规则持久化到Nacos保存，只要刷新8401某个rest地址，sentinel控制台的流控规则就能看到，只要Nacos里面的配置不删除，针对8401上sentinel上的流控规则持续有效
+
+pom.xml
+
+<dependency>
+   <groupId>com.alibaba.csp</groupId>
+   <artifactId>sentinel-datasource-nacos</artifactId>
+</dependency>
+
+application.yml
+
+spring:
+  application:
+    name: cloudalibaba-sentinel-service
+  cloud:
+    nacos:
+      discovery:
+        server-addr: localhost:8848 #Nacos服务注册中心地址
+    sentinel:
+      transport:
+        #配置Sentinel dashboard地址
+        dashboard: localhost:8080
+        #默认8719端口，假如被占用会自动从8719开始依次+1扫描，直至找到未被占用的端口
+        port: 8719
+      datasource:
+        dsl:
+          nacos:
+            server-addr: localhost:8848
+            dataId: cloudalibaba-sentinel-service
+            groupId: DEFAULT_GROUP
+            data-type: json
+            rule-type: flow
+
+在nacos上添加配置
+DataId为服务名
+
+[
+    {
+        "resource": "/rateLimit/byUrl",
+        "limitApp": "default",
+        "grade": 1,
+        "count": 1,
+        "strategy": 0,
+        "controlBehavior":0,
+        "clusterMode": false
+    }
+]
+..........................
+解决问题
+服务雪崩、服务降级、服务熔断（整合ribbo、openfeign）、服务限流
+
 
 -----------------------------------------------------------------
 RocketMQ
@@ -790,3 +967,9 @@ Alibaba Cloud OSS
 -----------------------------------------------------------------
 Alibaba Cloud SchedulerX
 阿里中间件团队开发的一款分布式人物调度产品，支持周期性的任务与固定时间点出发任务。
+
+
+
+
+开发软件的标准
+永远要有默认的模板，且用户能自定义内容
