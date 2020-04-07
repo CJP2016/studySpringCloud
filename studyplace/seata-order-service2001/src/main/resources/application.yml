@@ -32,5 +32,9 @@ logging:
     io:
       seata: info
 
+
 mybatis:
   mapperLocations: classpath:mapper/*.xml
+  type-aliases-package: com.study.springcloud.domain   #所有entity别名类所在包
+#mybatis:
+#  mapperLocations: classpath*:mapper/*.xml
