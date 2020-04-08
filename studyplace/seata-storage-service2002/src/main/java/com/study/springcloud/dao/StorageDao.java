@@ -2,7 +2,7 @@ package com.study.springcloud.dao;
 
 import com.study.springcloud.domain.CommontResult;
 import org.apache.ibatis.annotations.Mapper;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.apache.ibatis.annotations.Param;
 
 /**
  * @ClassName StorageDao
@@ -14,6 +14,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 @Mapper
 public interface StorageDao {
 
-    void decrease(@RequestParam("productId") Long productId, @RequestParam("count") Integer count);
+    void decrease(@Param("productId") Long productId, @Param("count") Integer count);
 
 }
