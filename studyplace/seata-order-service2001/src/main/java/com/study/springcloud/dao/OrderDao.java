@@ -6,7 +6,7 @@ import org.apache.ibatis.annotations.Param;
 
 @Mapper
 public interface OrderDao {
-    void crate(Order order);
+    void create(Order order);
 
     void update(@Param("userId") Long userId,@Param("status") Integer status);
 }
