@@ -32,7 +32,16 @@ import java.util.function.Consumer;
  *   语法格式五：若Lambda体中有只有一条语句，return和大括号都可以省略不写
  *      Comparator<Integer> com = (x,y) -> Integer.compare(x,y);
  *
- *   语法格式六：Lambda表达式的参数列表的数据类型可以省略不写， 因为JVM编译器通过上下文推断出，数据类型，
+ *   语法格式六：Lambda表达式的参数列表的数据类型可以省略不写， 因为JVM编译器通过上下文推断出，数据类型，即“类型推断”
+ *      (Integer x, Integer y) -> Integer.compare(x,y);
+ *
+ *  左右遇一括号省
+ *  左侧推断类型省
+ *  能省则省
+ *
+ *  二、Lambda 表达式需要 “函数式接口”的支持
+ *      函数式接口：接口中只有一个抽象方法的接口，称为函数式接口
+ *      可以用注解@FunctionalInterface 修饰,  可以检测是否是函数式接口。
  * @create 2020/4/14 16:56
  **/
 public class TestLambda2 {
@@ -83,5 +92,16 @@ public class TestLambda2 {
     public void test6(){
         Comparator<Integer> com = (x,y) -> Integer.compare(x,y);
         System.out.println(com);
+    }
+
+    //需求对一个数运算
+    @Test
+    public void test7(){
+        Integer com= operation(100,(x) -> x * x);
+        System.out.println(com);
+    }
+
+    public Integer operation(Integer num,MyFun myFun){
+        return myFun.getValue(num);
     }
 }

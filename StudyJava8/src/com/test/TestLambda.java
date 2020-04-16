@@ -33,13 +33,15 @@ public class TestLambda {
 
     //需求：获取当前公司中员工年龄大于35的员工信息
     List<Employee> employees = Arrays.asList(
-            new Employee("1111",18,1111.99),
-            new Employee("2222",38,2222.99),
-            new Employee("3333",50,3333.99),
-            new Employee("4444",16,4444.99),
-            new Employee("5555",8,5555.99),
-            new Employee("6666",11,6666.99),
-            new Employee("7777",13,7777.99)
+            new Employee(1,"1111",18,11111.11, Employee.Status.FREE),
+            new Employee(2,"2222",38,22222.22, Employee.Status.FREE),
+            new Employee(3,"3333",50,3333.99, Employee.Status.FREE),
+            new Employee(4,"4444",16,4444.99, Employee.Status.FREE),
+            new Employee(5,"5555",8,5555.99, Employee.Status.FREE),
+            new Employee(6,"6666",11,6666.99, Employee.Status.FREE),
+            new Employee(5,"5555",8,5555.99, Employee.Status.FREE),
+            new Employee(6,"6666",11,6666.99, Employee.Status.FREE),
+            new Employee(7,"7777",13,7777.99, Employee.Status.FREE)
     );
 
     @Test
