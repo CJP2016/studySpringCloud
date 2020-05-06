@@ -1,0 +1,19 @@
+# 简化部署
+
+pom.xml导入spring-boot-maven-plugin可以打包后使用java -jar xxx.jar方式启动，无需部署到tomcat服务器。
+
+# idea使用Spring Initializer快速创建SpringBoot项目
+
+默认生成的Spring boot 项目：
+
+?	主程序已经生成好
+
+?	resources文件夹中目录结构
+
+?			static：保存所有的静态资源：js css images
+
+?			templates： 保存所有的模板页面；
+
+?			application.properties：配置文件
+
+?			
