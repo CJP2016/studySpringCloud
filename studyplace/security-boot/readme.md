@@ -1,0 +1,16 @@
+SecurityContextPersistenceFilter:是整个拦截过程的入口和出口。会在请求开始时从配置好的SecurityContextRepository中获取SecurityContext，
+然后把它设置给SecurityContextHolder。请求完成后将SecurityCOntextHolder持有的SecurityContext保存在配置好的SecurityContextRepository，同时清除持有的SecurityContext
+
+UsernamePasswordAuthenticationFilter：用于处理表单提交的验证，该表单必须提供对应的用户名和密码，其内部还有登录成功和失败后进行处理的。
+
+FilterSecurityInterceptor:用于保护web资源。使用AccessDecisionManager对当前用户进行授权访问
+
+ExceptionTeanslationFilter:捕获来自FilterChain所有的异常，并进行处理。只处理两类异常：AuthenticationException和AccessDeniedException,其他异常会继续抛出
+
+#基于方法的拦截注解
+#在注解类名上添加注解
+@EnableGlobalMethodSecurity(securedEnabled = true,prePostEnable = true)
+
+@PreAuthorize("hasAuthority('p1')") //表示拥有p1权限才可以访问
+
+@PostAuthorize
