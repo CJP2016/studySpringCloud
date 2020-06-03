@@ -43,6 +43,8 @@
         <module>oauth2</module>
         <module>security-boot</module>
         <module>oauth</module>
+        <module>eureka-oauth-server</module>
+        <module>gateway</module>
     </modules>
     <packaging>pom</packaging>
 

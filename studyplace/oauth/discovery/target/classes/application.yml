@@ -1,0 +1,22 @@
+server:
+  port:  8666
+
+spring:
+  application:
+    name: discovery
+
+eureka:
+  server:
+    enable-self-preservation: false #关闭服务器自我保护
+    eviction-interval-timer-in-ms: 10000 #清理间隔
+    shouldUseReadOnlyResponseCache: true #切换到cp
+  client:
+    register-with-eureka: false
+    fetch-registry: false
+    instance-info-replication-interval-seconds: 10
+    serviceUrl:
+      defaultZone: http://localhost:${server.port}/eureka/
+  instance:
+    hostname: ${spring.cloud.client.ip-address}
+    prefer-ip-address: true
+    instance-id: ${spring.application.name}/:${spring.cloud.client.ip-address}:${spring.application.instance_id:${server.port}}

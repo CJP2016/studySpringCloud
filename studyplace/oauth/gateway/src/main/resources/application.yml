@@ -1,0 +1,52 @@
+spring:
+  application:
+    name: gateway
+  main:
+    allow-bean-definition-overriding: true
+server:
+  port: 8555
+
+zuul:
+  retryable: true
+  ignored-services: '*'
+  add-host-header: true
+  sensitive-headers: '*'
+  routes:
+    uaa-service.stripPrefix: false
+#    uaa-service.stripPrefix: false
+#    uaa-service.path: /uaa/**
+    uaa-service.path: '/uaa/**'
+    order-service.stripPrefix: false
+    order-service.path: '/order/**'
+
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8666/eureka/
+  instance:
+    prefer-ip-address: true
+#    instance-id: ${spring.application.name:${spring.cloud.client.ip-address}:${spring.application.instance_id:${server.port}}
+    instance-id: ${spring.cloud.client.ipAddress}:${spring.application.name}:${spring.application.instance_id:${server.port}}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: refresh,health,info,env
+
+logging:
+  level:
+    root: info
+    org.springframework.web: info
+
+feign:
+  hystrix:
+    enabled: true
+  compression:
+    request:
+      enabled: true
+      mime-types: text/html , application/xml , application/json
+      min-request-size: 2048
+    response:
+      enabled: true
